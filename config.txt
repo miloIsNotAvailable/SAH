@@ -1,0 +1,2 @@
+obj=../models/Room.obj
+mtl=../models/
