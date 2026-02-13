@@ -34,7 +34,7 @@ glm::vec3 center(-10.0f, 18.f, 400.0f);
 glm::vec3 eye(-120.0f, -58.f, -100.0f);
 Camera camera( 1.5f, 840.9f, 1.15f, eye, center );
 
-const int SPP = 64;
+const int SPP = 128;
 
 glm::vec3 cosineDirection( float seed, float cosThetaMax, glm::vec3 w)
 {
