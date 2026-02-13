@@ -28,13 +28,13 @@ struct Pixel {
     Pixel() : color( glm::vec3( 0. ) ) {}
 };
 
-const GLuint WIDTH = 400, HEIGHT = 400;
+const GLuint WIDTH = 1000, HEIGHT = 1000;
 
 glm::vec3 center(-10.0f, 18.f, 400.0f);
 glm::vec3 eye(-120.0f, -58.f, -100.0f);
 Camera camera( 1.5f, 840.9f, 1.15f, eye, center );
 
-const int SPP = 128;
+const int SPP = 64;
 
 glm::vec3 cosineDirection( float seed, float cosThetaMax, glm::vec3 w)
 {
@@ -346,7 +346,12 @@ glm::vec3 rendererCalculateColor( glm::vec3& ro, glm::vec3& rd, BVH *bvh, float 
 
         if (!isHit) {
             // delete hit;
-            // L += beta * glm::vec3(0.2, 0.2, 0.3);
+            
+            L += beta * glm::vec3(0.808, 0.949, 1);
+
+            // if( i == 0 )
+            //     L += glm::vec3(0.808, 0.949, 1);
+                            
             break;
         }
 
@@ -363,47 +368,6 @@ glm::vec3 rendererCalculateColor( glm::vec3& ro, glm::vec3& rd, BVH *bvh, float 
                                     mat.diffuse[1], 
                                     mat.diffuse[2]);
         glm::vec3 bsdf = color / float(PI);
-
-        // int lightInd = distrib( rng );
-
-        // // for( Light& light : lights ) {
-        // // }
-        // Light& light = lights[ lightInd ];
-                
-        // // MIS from light
-        // glm::vec3 wi = light.sample( pos, nor, hash( sa ) );
-
-        // float cosThetaShadow = std::max(glm::dot( nor, wi ), 0.f);
-
-        // float gPdf = cosThetaShadow / (  PI);
-        // float fPdf = light.pdf();
-        
-        // glm::vec3 Le = light.Le( pos, nor, bsdf, wi, fPdf, hash(sa), bvh, glm::dot( lDir, lDir ) + 1e-6f );
-
-        // if( light.type == POINT ) {
-        //     L += beta * nLights * Le;
-        // } else {
-        //     float weight = PowerHeuristic(1, fPdf, 1, gPdf);
-        //     Le *= weight;
-        // }
-
-        // // MIS from object
-        // wi = light.sample( pos, nor, hash( sa ) );
-
-        // cosThetaShadow = std::max(glm::dot( nor, wi ), 0.f);
-
-        // fPdf = cosThetaShadow / ( PI);
-        // gPdf = light.pdf();
-        
-        // Le = light.Le( pos, nor, bsdf, wi, gPdf, hash(sa), bvh, glm::dot(lDir, lDir) + 1e-6 );
-
-        // if( light.type == POINT ) {
-        //     L += beta * nLights * Le;
-        // } else {
-        //     float weight = PowerHeuristic(1, fPdf, 1, gPdf);
-
-        //     L += beta * nLights * Le;
-        // }
 
         float rndTheta = hash( sa ) * 2.f * float(PI);
         float rndZ = hash( sa ) * 2.f - 1.f;
