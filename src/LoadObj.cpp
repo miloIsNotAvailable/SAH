@@ -85,6 +85,7 @@ std::vector<Triangle> __LoadObj__( std::string inputfile, std::string mtlfile ) 
 
             // Loop over vertices in the face.
             std::vector<glm::vec3> verts;
+            glm::vec3 normal;
             for (size_t v = 0; v < fv; v++) {
             // access to vertex
             tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
@@ -102,6 +103,8 @@ std::vector<Triangle> __LoadObj__( std::string inputfile, std::string mtlfile ) 
                 tinyobj::real_t ny = attrib.normals[3*size_t(idx.normal_index)+1];
                 tinyobj::real_t nz = attrib.normals[3*size_t(idx.normal_index)+2];
 
+                normal = glm::vec3( nx, ny, nz );
+
                 normals.push_back( glm::vec3( nx, ny, nz ) );
             }
 
@@ -118,10 +121,14 @@ std::vector<Triangle> __LoadObj__( std::string inputfile, std::string mtlfile ) 
             // per-face material
             int matId = shapes[s].mesh.material_ids[f];
             tinyobj::material_t m = materials[ matId ];
+            t.n=normal;
             // materials.push_back(  );
             // materials[ matId ] = m;
             // printf( "%f, %f, %f\n", m.diffuse[0], m.diffuse[1], m.diffuse[2] );
             
+            // if( normal )
+            // t.n = normal;
+
             t.materialID = matId;
             t.name = shapes[s].name;
             triangles.push_back( t );

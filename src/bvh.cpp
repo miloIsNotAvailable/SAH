@@ -412,6 +412,10 @@ bool BVH::IntersectBVH( const glm::vec3& o, const glm::vec3& r, Hit& outHit, flo
 
     if( !hitTri ) return false;
 
+    // if (glm::dot(hitTri->n, r) > 0.0f)
+    //     hitTri->n = -hitTri->n;
+
+    // hitTri->n = N;
     outHit.hitPoint = hitPoint;
     outHit.triangle = hitTri;
     outHit.t = closestT;

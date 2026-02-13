@@ -20,8 +20,6 @@
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
-const GLuint WIDTH = 400, HEIGHT = 400;
-
 struct Pixel {
     glm::vec3 color=glm::vec3( 0. );
     glm::vec2 coord;
@@ -29,6 +27,14 @@ struct Pixel {
     Pixel( glm::vec2 coord ) : coord(coord) {}
     Pixel() : color( glm::vec3( 0. ) ) {}
 };
+
+const GLuint WIDTH = 400, HEIGHT = 400;
+
+glm::vec3 center(-10.0f, 18.f, 400.0f);
+glm::vec3 eye(-120.0f, -58.f, -100.0f);
+Camera camera( 1.5f, 840.9f, 1.15f, eye, center );
+
+const int SPP = 64;
 
 glm::vec3 cosineDirection( float seed, float cosThetaMax, glm::vec3 w)
 {
@@ -131,6 +137,7 @@ struct Light {
     public:
     glm::vec3 lightPos, Li;
     LightType type;
+    float cosThetaMax;
 
     Light( glm::vec3 lightPos, glm::vec3 Li, LightType type ) : 
     lightPos( lightPos ), 
@@ -141,7 +148,7 @@ struct Light {
         switch( type ) {
             
             case LightType::SUN: {
-                float cosThetaMax = .099;
+                // float cosThetaMax = .5;
                 float pdf = 1.f/(2.f * PI * (1. - cosThetaMax));
                 return pdf;
             };
@@ -168,8 +175,8 @@ struct Light {
             // }
 
             case LightType::SUN: {
-                float cosThetaMax = .099;
-                glm::vec3 sunDir = cosineDirection( seed, cosThetaMax, -lightPos);
+                // float cosThetaMax = 2.f * seed - 1.f;
+                glm::vec3 sunDir = cosineDirection( seed, cosThetaMax, lightPos);
 
                 // Hit* sunHit = bvh->traverse(pos + nor * 1e-6f, sunDir, nullptr);
 
@@ -302,30 +309,35 @@ glm::vec3 rendererCalculateColor( glm::vec3& ro, glm::vec3& rd, BVH *bvh, float 
     
     glm::vec3 lightCol = glm::vec3(1.000, .8, 1.);
     // glm::vec3 lightCol = glm::vec3(1.000, .8, .6);
-    // glm::vec3 lightPos = glm::vec3(280., 500., 250.);
-    glm::vec3 lightPos = glm::vec3(-680., 1000., 250.);
+    // glm::vec3 lightPos = glm::vec3(280., 400., 10.);
+    glm::vec3 lightPos = glm::vec3(-60.0f, 28.f, -60.0f);
+    // glm::vec3 lightPos = glm::vec3(280., 400., 250.);
+    // glm::vec3 lightPos = glm::vec3(-60.0f, 198.f, 400.0f);
     // glm::vec3 sunPos = glm::vec3(0.f, 0.f, 1.);
     
     float cosThetaMax = sqrt(3.)/2.f;
     // glm::vec3 sunCol = glm::vec3(1, 0.396, 0.659);
-    glm::vec3 sunCol = glm::vec3(1, 0.878, 0.929);
-    glm::vec3 sunPos = glm::normalize(glm::vec3( -1., 1., -1 ));
+    glm::vec3 sunCol = glm::vec3(1, 0.894, 0.671) * 1.f;
+    glm::vec3 sunPos = glm::normalize(glm::vec3( 1., 1., 1. ));
     
     glm::vec3 beta = glm::vec3( 1., 1., 1. );
     glm::vec3 L = glm::vec3( 0. );
 
     const int bounces = 7;
     
-    static std::vector<Light> lights = {
-        Light( lightPos, lightCol * 25000.0f, LightType::POINT ),
+    Light sun = Light( sunPos, sunCol, LightType::SUN );
+    sun.cosThetaMax = 2.f * sa - 1.f;
+
+    std::vector<Light> lights = {
+        Light( lightPos, lightCol * 65000.0f, LightType::POINT ),
         // Light( lightPos, glm::vec3( 0.98, 0.549, 0.129 ) * 7.8f, LightType::POINT ),
         // Light( glm::vec3( 280., 500., 50. ), glm::vec3( 0, 0.851, 0.416 ) * 3.8f, LightType::POINT ),
-        Light( sunPos, sunCol * 1.0f, LightType::SUN ),
+        // sun,
         // Light( glm::vec3(300., 500., 250.), sunCol * 210.1f, LightType::POINT ),
     };
 
-    float nLights = float(lights.size());
-    std::uniform_int_distribution<> distrib(0, nLights - 1);
+    // float nLights = float(lights.size());
+    // std::uniform_int_distribution<> distrib(0, nLights - 1);
 
     for( int i = 0; i < bounces; i ++ ) {
 
@@ -340,11 +352,10 @@ glm::vec3 rendererCalculateColor( glm::vec3& ro, glm::vec3& rd, BVH *bvh, float 
 
         glm::vec3& pos = hit.hitPoint;
         glm::vec3 nor = glm::normalize(hit.triangle->n);
-
-        glm::vec3 point = lightPos;
-        glm::vec3 lDir = point - pos;
-        glm::vec3 liray = glm::normalize( lDir );
+        bool frontFace = glm::dot( rd, nor ) > 0;
     
+        if( frontFace ) nor=-nor;
+
         int matId = hit.triangle->materialID;
         tinyobj::material_t& mat = Materials[matId];
 
@@ -353,30 +364,28 @@ glm::vec3 rendererCalculateColor( glm::vec3& ro, glm::vec3& rd, BVH *bvh, float 
                                     mat.diffuse[2]);
         glm::vec3 bsdf = color / float(PI);
 
-        int lightInd = distrib( rng );
+        // int lightInd = distrib( rng );
 
-        // for( Light& light : lights ) {
-        // }
-        Light& light = lights[ lightInd ];
+        // // for( Light& light : lights ) {
+        // // }
+        // Light& light = lights[ lightInd ];
                 
-        // MIS from light
-        glm::vec3 wi = light.sample( pos, nor, hash( sa ) );
+        // // MIS from light
+        // glm::vec3 wi = light.sample( pos, nor, hash( sa ) );
 
-        float cosThetaShadow = std::max(glm::dot( nor, wi ), 0.f);
+        // float cosThetaShadow = std::max(glm::dot( nor, wi ), 0.f);
 
-        float gPdf = cosThetaShadow / (  PI);
-        float fPdf = light.pdf();
+        // float gPdf = cosThetaShadow / (  PI);
+        // float fPdf = light.pdf();
         
-        glm::vec3 Le = light.Le( pos, nor, bsdf, wi, fPdf, hash(sa), bvh, glm::dot( lDir, lDir ) + 1e-6f );
+        // glm::vec3 Le = light.Le( pos, nor, bsdf, wi, fPdf, hash(sa), bvh, glm::dot( lDir, lDir ) + 1e-6f );
 
-        if( light.type == POINT ) {
-            L += beta * nLights * Le;
-        } else {
-            float weight = PowerHeuristic(1, fPdf, 1, gPdf);
-            Le *= weight;
-            L += beta * nLights * Le;
-        }
-
+        // if( light.type == POINT ) {
+        //     L += beta * nLights * Le;
+        // } else {
+        //     float weight = PowerHeuristic(1, fPdf, 1, gPdf);
+        //     Le *= weight;
+        // }
 
         // // MIS from object
         // wi = light.sample( pos, nor, hash( sa ) );
@@ -392,43 +401,87 @@ glm::vec3 rendererCalculateColor( glm::vec3& ro, glm::vec3& rd, BVH *bvh, float 
         //     L += beta * nLights * Le;
         // } else {
         //     float weight = PowerHeuristic(1, fPdf, 1, gPdf);
-        //     Le *= weight;
+
         //     L += beta * nLights * Le;
         // }
 
-        // Hit* lightHit = bvh->traverse(pos + nor * 1e-6f, liray, &hit->t);
-
-        // if ( !lightHit ) {
-        //     L += glm::vec3( 0. );
-        // } else {
-        //     float NdotL = std::max(glm::dot( nor, liray ), 0.f);
-        //     float pdf = 1.f; // cause point light lol
-        //     glm::vec3 Li = lightCol * .7f;
-        //     L += beta * bsdf * Li * NdotL / pdf;
-        // }
+        float rndTheta = hash( sa ) * 2.f * float(PI);
+        float rndZ = hash( sa ) * 2.f - 1.f;
+        float rndX = sqrt( 1 - rndZ * rndZ ) * cos( rndTheta );
+        float rndY = sqrt( 1 - rndZ * rndZ ) * sin( rndTheta );
         
-        // delete lightHit;
+        // float radius = 50.f;
+        float radius = 20.f;
 
-        // glm::vec3 sunDir = cosineDirection( hash( sa ), cosThetaMax, sunPos );
-        // // sunDir
-
-        // Hit* sunHit = bvh->traverse(pos + nor * 1e-6f, sunDir, nullptr);
-
-        // if ( !sunHit ) {
-        //     L += glm::vec3( 0. );
-        // } else {
-        //     float NdotL = std::max(glm::dot( nor, sunDir ), 0.f);
-        //     float pdf = 1.f/(2.f * PI * (1. - cosThetaMax));
-        //     glm::vec3 Li = sunCol * .7f;
-        //     L += beta * bsdf * Li * NdotL / pdf;
-        // }
+        glm::vec3 rndPoint = lightPos + radius * glm::vec3( rndX, rndY, rndZ );
         
-        // delete sunHit;
+        glm::vec3 point = rndPoint;
+        glm::vec3 lDir = point - (pos);
+        glm::vec3 liray = glm::normalize( lDir );
 
+        glm::vec3 lightNormal = glm::normalize( rndPoint - lightPos );
+        // glm::vec3 lightNormal = glm::normalize( rndPoint );
+
+        float cosThetaL = std::max(dot(lightNormal, -liray), 0.f);
+        // float cosThetaL = abs(dot(lightNormal, -liray));
+
+        float pdf_area = 1.f / (4.f * PI * radius * radius);
+        float pdf_omega = pdf_area * glm::dot(lDir, lDir) / cosThetaL;
+
+        if( cosThetaL <= 0.f ) continue;
+
+        // printf( "%f, %f\n", cosThetaL, pdf_omega );
+
+        Hit pointHit;
+        bool isLightHit = bvh->IntersectBVH(pos + nor * 1e-4f, liray, pointHit, glm::length( lDir ) - 1e-4f);
+
+        // if(!isLightHit)
+        //     printf( "%f, %f, %f, %f, %f, %f, %f, %f, %f\n", pointHit.t, pointHit.hitPoint.x, pointHit.hitPoint.y, pointHit.hitPoint.z, pos.x, pos.y, pos.z, glm::length(lDir), glm::length( pointHit.hitPoint - pos ));
+
+        float NdotL = std::max( glm::dot( nor, -liray ), 0.f );
+        float I = 19.f;
+        // float I = 13.f;
+
+        float shadow = (1.f - float(isLightHit));
+        
         glm::vec3 bounceDir = RandomUnitVectorInHemisphereOf( nor, hash(sa) );
         float cosTheta = std::max(glm::dot(nor, bounceDir), 0.f);
         // float pdf = 1. / ( 2. * PI );  
+
+        Hit areaHit;
+        bool aHit = bvh->IntersectBVH(pos + nor * 1e-4f, bounceDir, areaHit);
+
         float pdf = cosTheta / ( PI );  
+        if( cosTheta <= 0.f ) continue;
+
+        // shadow breaks shit
+        // glm::vec3 nextL = L;
+        L += PowerHeuristic( 1, pdf, 1, pdf_omega ) * bsdf * cosTheta * (1.f - float(aHit)) / pdf;
+        // L += PowerHeuristic( 1, pdf_omega, 1, pdf ) * bsdf * NdotL * I * cosThetaL * shadow / (pdf_area * glm::dot(lDir, lDir));
+        L += PowerHeuristic( 1, pdf_omega, 1, pdf ) * bsdf * I * cosThetaL * shadow / (pdf_omega);
+        // L *= beta;
+        // L += PowerHeuristic( 1, pdf_omega, 1, pdf ) * bsdf * NdotL * I * cosThetaL * shadow / (pdf_area * glm::dot(lDir, lDir));
+        // L += PowerHeuristic( 1, pdf_omega, 1, pdf ) * bsdf * NdotL * I * cosThetaL * shadow / (pdf_omega);
+        // L += bsdf * I * cosThetaL * shadow / (pdf_omega);
+        L *= beta;
+        
+
+        // printf( "%f, %f, %f\n", L.x, L.y, L.z );
+
+        // nextL = L;
+
+        // L += beta * bsdf * NdotL * I * atten * shadow;
+
+        // printf( "%f, %f, %f\n", pdf_omega, atten, beta.x * shadow * bsdf.x * I * atten / pdf_omega );
+
+
+        bounceDir = RandomUnitVectorInHemisphereOf( nor, hash(sa) );
+        cosTheta = std::max(glm::dot(nor, bounceDir), 0.f);
+        // float pdf = 1. / ( 2. * PI );  
+
+        // if( cosTheta <= 0.f ) continue;
+
+        pdf = cosTheta / ( PI );  
 
         beta *= bsdf * cosTheta / pdf;
 
@@ -446,7 +499,7 @@ glm::vec3 rendererCalculateColor( glm::vec3& ro, glm::vec3& rd, BVH *bvh, float 
         }
 
         rd = bounceDir;
-        ro = pos + nor * 1e-6f;
+        ro = pos + nor * 1e-4f;
 
         // delete hit;
     }   
@@ -475,15 +528,18 @@ void renderBlock( std::vector<Pixel>& image,
 
         Pixel pixel(fragCoord);
 
-        for (int i = 0; i < SAMPLES; i++)
+        for (int i = 1; i < SAMPLES; i++)
         {
             Lens worldDir = camera.thinLensRay( st, float(i));
             // Hit* hit = bvh->traverse(worldDir.point, worldDir.dir, nullptr);
 
-            pixel.color += rendererCalculateColor( worldDir.point, worldDir.dir, bvh, hash( i ) );
+            // pixel.color += rendererCalculateColor( worldDir.point, worldDir.dir, bvh, hash( i ) );
+            glm::vec3 currentColor = rendererCalculateColor( worldDir.point, worldDir.dir, bvh, hash( i ) );
+
+            pixel.color = ( pixel.color * float(i - 1) + currentColor ) / float(i);
         }
 
-        pixel.color /= float(SAMPLES);
+        // pixel.color /= float(SAMPLES);
         int idx = y * WIDTH + x;
         image[idx] = pixel;
     }
@@ -492,7 +548,7 @@ void renderBlock( std::vector<Pixel>& image,
 void renderSceneToImage(std::vector<Pixel>& image, BVH* bvh, Camera& camera, glm::vec3& eye, glm::vec3& center)
 {
     int GRID_SIZE = WIDTH * HEIGHT;
-    int SAMPLES = 1;
+    int SAMPLES = SPP;
     int row = 1, col = 1;
 
     std::vector<std::future<void>> futures;
@@ -563,15 +619,18 @@ void updateTexture(GLuint textureID, const std::vector<Pixel>& image)
 // glm::vec3 eye(278.0f, 260.4f, 100.0f);
 // Camera camera( 1.5f, 740.9f, 0.15f, eye, center );
 
+// 263.437, 197.837, 525.034
+// -303.239, -313.618, -360
+
 // bunny
-// glm::vec3 center(-800.0f, 570.4f, 1000.0f);
-// glm::vec3 eye(-100.0f, 560.4f, -100.0f);
+// glm::vec3 center(-10.0f, -28.f, 400.0f);
+// glm::vec3 eye(-120.0f, 18.f, -100.0f);
 // Camera camera( 1.5f, 840.9f, 1.15f, eye, center );
 
 // Room
-glm::vec3 center(-100.0f, 70.4f, -100.0f);
-glm::vec3 eye(-100.0f, 60.4f, -500.0f);
-Camera camera( 1.5f, 840.9f, 1.15f, eye, center );
+// glm::vec3 center(-20.0f, 70.4f, -100.0f);
+// glm::vec3 eye(-20.0f, 60.4f, -500.0f);
+// Camera camera( 1.5f, 840.9f, 1.15f, eye, center );
 
 bool cameraMoved = true; 
 
@@ -584,6 +643,8 @@ int main()
     BVH* bvh = new BVH(triangles.begin(), triangles.end());
     
     std::cout << "built bvh" << std::endl;
+    std::cout << bvh->maxVec.x << bvh->maxVec.y << bvh->maxVec.z << std::endl;
+    std::cout << bvh->minVec.x << bvh->minVec.y << bvh->minVec.z << std::endl;
     // std::cout << bvh->count << std::endl;
 
     // 992.046

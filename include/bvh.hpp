@@ -10,7 +10,7 @@ struct Hit {
     public:
     const Triangle* triangle;
     glm::vec3 hitPoint;
-    float t;
+    float t=0.f;
     Hit();
 
     Hit(const glm::vec3& p, const Triangle* t)
