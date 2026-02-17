@@ -1,3 +1,4 @@
 ## Youll have to readd ./models/ fodler lol
-### 64 SPP
-!["64 SPP, Room.obj"](images/RV44R.png)
+### 128 SPP
+!["128 SPP, Room.obj"](images/7I4Xk.png)
+!["128 SPP, Room.obj"](images/SRbFt.png)

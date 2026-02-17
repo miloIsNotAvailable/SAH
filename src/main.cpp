@@ -28,13 +28,13 @@ struct Pixel {
     Pixel() : color( glm::vec3( 0. ) ) {}
 };
 
-const GLuint WIDTH = 1000, HEIGHT = 1000;
+const GLuint WIDTH = 400, HEIGHT = 400;
 
 glm::vec3 center(-10.0f, 18.f, 400.0f);
 glm::vec3 eye(-120.0f, -58.f, -100.0f);
 Camera camera( 1.5f, 840.9f, 1.15f, eye, center );
 
-const int SPP = 64;
+const int SPP = 10;
 
 glm::vec3 cosineDirection( float seed, float cosThetaMax, glm::vec3 w)
 {
@@ -131,178 +131,412 @@ std::string generateRandomString(int length)
     return random_string;
 }
 
-enum LightType { SUN, POINT, AREA };
+// enum LightType { SUN, POINT, AREA };
 
-struct Light {
-    public:
-    glm::vec3 lightPos, Li;
-    LightType type;
-    float cosThetaMax;
+// struct Light {
+//     public:
+//     glm::vec3 lightPos, Li;
+//     LightType type;
+//     float cosThetaMax;
 
-    Light( glm::vec3 lightPos, glm::vec3 Li, LightType type ) : 
-    lightPos( lightPos ), 
-    Li( Li ), 
-    type( type ) {}
+//     Light( glm::vec3 lightPos, glm::vec3 Li, LightType type ) : 
+//     lightPos( lightPos ), 
+//     Li( Li ), 
+//     type( type ) {}
 
-    float pdf() {
-        switch( type ) {
+//     float pdf() {
+//         switch( type ) {
             
-            case LightType::SUN: {
-                // float cosThetaMax = .5;
-                float pdf = 1.f/(2.f * PI * (1. - cosThetaMax));
-                return pdf;
-            };
+//             case LightType::SUN: {
+//                 // float cosThetaMax = .5;
+//                 float pdf = 1.f/(2.f * PI * (1. - cosThetaMax));
+//                 return pdf;
+//             };
 
-            case LightType::POINT: {
-                return 1.;
-            }
+//             case LightType::POINT: {
+//                 return 1.;
+//             }
             
-            default: 
-                return 0.;
-        }
-    }
+//             default: 
+//                 return 0.;
+//         }
+//     }
 
-    glm::vec3 sample( glm::vec3 pos, glm::vec3 nor, float seed ) {
-        switch( type ) {
+//     glm::vec3 sample( glm::vec3 pos, glm::vec3 nor, float seed ) {
+//         switch( type ) {
 
-            // case LightType::AREA : {
-            //     float u = hash( seed );
-            //     float v = hash( seed );
+//             // case LightType::AREA : {
+//             //     float u = hash( seed );
+//             //     float v = hash( seed );
 
-            //     float r = sqrt( u );
+//             //     float r = sqrt( u );
 
 
-            // }
+//             // }
 
-            case LightType::SUN: {
-                // float cosThetaMax = 2.f * seed - 1.f;
-                glm::vec3 sunDir = cosineDirection( seed, cosThetaMax, lightPos);
+//             case LightType::SUN: {
+//                 // float cosThetaMax = 2.f * seed - 1.f;
+//                 glm::vec3 sunDir = cosineDirection( seed, cosThetaMax, lightPos);
 
-                // Hit* sunHit = bvh->traverse(pos + nor * 1e-6f, sunDir, nullptr);
+//                 // Hit* sunHit = bvh->traverse(pos + nor * 1e-6f, sunDir, nullptr);
 
-                // glm::vec3 Le = glm::vec3( 0.f );
-                // if ( !sunHit ) {
-                //     // Le = glm::vec3( 0. );
-                //     sunDir = glm::vec3( 0. );
-                // } else {
-                //     float NdotL = std::max(glm::dot( nor, sunDir ), 0.f);
-                //     // float pdf = 1.f/(2.f * PI * (1. - cosThetaMax));
-                //     // glm::vec3 Li = lightCol * .7f;
-                //     Le = bsdf * Li * NdotL / pdf;
-                // }
+//                 // glm::vec3 Le = glm::vec3( 0.f );
+//                 // if ( !sunHit ) {
+//                 //     // Le = glm::vec3( 0. );
+//                 //     sunDir = glm::vec3( 0. );
+//                 // } else {
+//                 //     float NdotL = std::max(glm::dot( nor, sunDir ), 0.f);
+//                 //     // float pdf = 1.f/(2.f * PI * (1. - cosThetaMax));
+//                 //     // glm::vec3 Li = lightCol * .7f;
+//                 //     Le = bsdf * Li * NdotL / pdf;
+//                 // }
                 
-                // delete sunHit;
+//                 // delete sunHit;
 
-                return sunDir;
-            }
+//                 return sunDir;
+//             }
 
-            case LightType::POINT: {
+//             case LightType::POINT: {
 
-                glm::vec3 liray = glm::normalize( lightPos - pos );
+//                 glm::vec3 liray = glm::normalize( lightPos - pos );
 
-                // Hit* lightHit = bvh->traverse(pos + nor * 1e-6f, liray, &tmax);
+//                 // Hit* lightHit = bvh->traverse(pos + nor * 1e-6f, liray, &tmax);
 
-                // glm::vec3 Le( 0.f );
-                // if ( !lightHit ) {
-                //     Le = glm::vec3( 0. );
-                // } else {
-                //     float NdotL = std::max(glm::dot( nor, liray ), 0.f);
-                //     // float pdf = 1.f; // cause point light lol
-                //     // glm::vec3 Li = Li * .7f;
-                //     Le = bsdf * Li * NdotL / pdf;
-                // }
+//                 // glm::vec3 Le( 0.f );
+//                 // if ( !lightHit ) {
+//                 //     Le = glm::vec3( 0. );
+//                 // } else {
+//                 //     float NdotL = std::max(glm::dot( nor, liray ), 0.f);
+//                 //     // float pdf = 1.f; // cause point light lol
+//                 //     // glm::vec3 Li = Li * .7f;
+//                 //     Le = bsdf * Li * NdotL / pdf;
+//                 // }
 
-                // delete lightHit;
+//                 // delete lightHit;
 
-                return liray;
-            }
+//                 return liray;
+//             }
 
-            default:
-                return glm::vec3( 0.f );
-        }
-    }
+//             default:
+//                 return glm::vec3( 0.f );
+//         }
+//     }
 
-    glm::vec3 Le( glm::vec3 pos, glm::vec3 nor, glm::vec3 bsdf, glm::vec3 wi, float pdf, float seed, BVH *bvh, float tmax ) {
-        switch( type ) {
+//     glm::vec3 Le( glm::vec3 pos, glm::vec3 nor, glm::vec3 bsdf, glm::vec3 wi, float pdf, float seed, BVH *bvh, float tmax ) {
+//         switch( type ) {
 
-            case LightType::SUN: {
-                // float cosThetaMax = sqrt(3.)/2.f;
-                glm::vec3 sunDir = wi;
-                float NdotL = glm::dot( nor, sunDir );
+//             case LightType::SUN: {
+//                 // float cosThetaMax = sqrt(3.)/2.f;
+//                 glm::vec3 sunDir = wi;
+//                 float NdotL = glm::dot( nor, sunDir );
                 
-                if( NdotL <= 0.f ) return glm::vec3( 0. );
+//                 if( NdotL <= 0.f ) return glm::vec3( 0. );
 
-                Hit sunHit;
-                bool isHit = bvh->IntersectBVH(pos + nor * 1e-6f, sunDir, sunHit);
+//                 Hit sunHit;
+//                 bool isHit = bvh->IntersectBVH(pos + nor * 1e-6f, sunDir, sunHit);
 
-                glm::vec3 Le = glm::vec3( 0.f );
-                if ( isHit ) {
-                    Le = glm::vec3( 0. );
-                } else {
-                    // Le = glm::vec3( 0. );
-                    // float pdf = 1.f/(2.f * PI * (1. - cosThetaMax));
-                    // glm::vec3 Li = lightCol * .7f;
-                    Le = bsdf * Li * NdotL / pdf;
-                }
+//                 glm::vec3 Le = glm::vec3( 0.f );
+//                 if ( isHit ) {
+//                     Le = glm::vec3( 0. );
+//                 } else {
+//                     // Le = glm::vec3( 0. );
+//                     // float pdf = 1.f/(2.f * PI * (1. - cosThetaMax));
+//                     // glm::vec3 Li = lightCol * .7f;
+//                     Le = bsdf * Li * NdotL / pdf;
+//                 }
                 
-                // delete sunHit;
+//                 // delete sunHit;
 
-                return Le;
-            }
+//                 return Le;
+//             }
 
-            case LightType::POINT: {
+//             case LightType::POINT: {
 
-                glm::vec3 d = lightPos - pos;
-                glm::vec3 liray = wi;
-                float r2 = glm::dot( d, d );
+//                 glm::vec3 d = lightPos - pos;
+//                 glm::vec3 liray = wi;
+//                 float r2 = glm::dot( d, d );
 
-                Hit lightHit;
-                bool isHit = bvh->IntersectBVH(pos + nor * 1e-6f, liray, lightHit, tmax);
+//                 Hit lightHit;
+//                 bool isHit = bvh->IntersectBVH(pos + nor * 1e-6f, liray, lightHit, tmax);
 
-                glm::vec3 Le( 0.f );
-                if ( !isHit ) {
-                    Le = glm::vec3( 0. );
-                } else {
-                    float NdotL = std::max(glm::dot( nor, liray ), 0.f);
-                    // float pdf = 1.f; // cause point light lol
-                    // glm::vec3 Li = Li * .7f;
-                    float atten = 1.f / r2;
-                    Le = bsdf * Li * NdotL * atten  / pdf;
-                }
+//                 glm::vec3 Le( 0.f );
+//                 if ( !isHit ) {
+//                     Le = glm::vec3( 0. );
+//                 } else {
+//                     float NdotL = std::max(glm::dot( nor, liray ), 0.f);
+//                     // float pdf = 1.f; // cause point light lol
+//                     // glm::vec3 Li = Li * .7f;
+//                     float atten = 1.f / r2;
+//                     Le = bsdf * Li * NdotL * atten  / pdf;
+//                 }
 
-                // delete lightHit;
+//                 // delete lightHit;
 
-                return Le;
-            }
+//                 return Le;
+//             }
 
-            default:
-                return glm::vec3( 0.f );
-        }
+//             default:
+//                 return glm::vec3( 0.f );
+//         }
+//     }
+// };
+
+// enum BSDFType { LAMBERT };
+
+// struct BSDF {
+//     glm::vec3 color;
+//     BSDFType type;
+
+//     BSDF( glm::vec3 color, BSDFType type ) : 
+//     color( color ), type( type ) {}
+
+//     glm::vec3 sample() {
+//         return color / float(PI);
+//     }
+
+//     float pdf( glm::vec3 wi ) {
+//         return 1. / (2. * PI);
+//     }
+// };
+
+float D_GGX_anisotropic( glm::vec3 w_m, float a_x, float a_y ) {
+    // from spherical
+    // x = r*sinTheta*cosPhi
+    // y = r*sinTheta*sinPhi
+    // z = r*cosTheta 
+
+    float cosTheta = abs(w_m.z);
+    float sinTheta = sqrt(std::max(0.f, 1.f - cosTheta * cosTheta));
+
+    float cos2Theta = cosTheta * cosTheta;
+    float sin2Theta = sinTheta * sinTheta;
+
+    if( cosTheta < 1e-4f ) return 0.f;
+    float tan2Theta = (sin2Theta) / (cos2Theta);
+
+    float cosPhi = w_m.x / sinTheta;
+    float sinPhi = w_m.y / sinTheta;
+
+    if( sinTheta == 0 ) {
+        cosPhi = 1.f;
+        sinPhi = 0.f;
     }
-};
 
-enum BSDFType { LAMBERT };
+    float cos2Phi = cosPhi * cosPhi;
+    float sin2Phi = sinPhi * sinPhi;
 
-struct BSDF {
-    glm::vec3 color;
-    BSDFType type;
+    float cos4Theta = cos2Theta * cos2Theta;
+    float e = 1.f + tan2Theta * ( cos2Phi / (a_x * a_x) + sin2Phi/(a_y * a_y) );
+    float denom = float( PI ) * a_x * a_y * cos4Theta * e * e;
 
-    BSDF( glm::vec3 color, BSDFType type ) : 
-    color( color ), type( type ) {}
+    return 1.f/denom;
+}
 
-    glm::vec3 sample() {
-        return color / float(PI);
+float Lambda( glm::vec3 w, float a_x, float a_y ) {
+
+    float cosTheta = abs(w.z);
+    float sinTheta = sqrt(std::max(0.f, 1.f - cosTheta * cosTheta));
+
+    float cos2Theta = cosTheta * cosTheta;
+    float sin2Theta = sinTheta * sinTheta;
+
+    if( cos2Theta < 1e-4f ) return 0.f;
+    float tan2Theta = (sin2Theta) / (cos2Theta);
+
+    float cosPhi = w.x / sinTheta;
+    float sinPhi = w.y / sinTheta;
+
+    if( sinTheta == 0 ) {
+        cosPhi = 1.f;
+        sinPhi = 0.f;
     }
 
-    float pdf( glm::vec3 wi ) {
-        return 1. / (2. * PI);
-    }
-};
+    float cos2Phi = cosPhi * cosPhi;
+    float sin2Phi = sinPhi * sinPhi;
+
+    float alpha2 = a_x * a_x * cos2Phi + a_y * a_y * sin2Phi;
+
+    return .5f * (sqrt(1.f + alpha2 * tan2Theta) - 1.f) ;
+}
+
+float G1( glm::vec3 w, float a_x, float a_y ) {
+    // printf( "%f\n", Lambda( w, a_x, a_y ) );
+    return 1./( 1. + Lambda( w, a_x, a_y ) );
+}
+
+float G( glm::vec3 wo, glm::vec3 wi, float a_x, float a_y ) {
+    return 1./( 1.f + Lambda( wo, a_x, a_y ) + Lambda( wi, a_x, a_y ) );
+}
+
+glm::vec3 Sample_wm( glm::vec3 w, float sa, float a_x, float a_y ) {
+    
+    glm::vec3 wh = glm::normalize( glm::vec3( a_x * w.x, a_y * w.y, w.z ) );
+    if( wh.z < 0 ) wh = -wh;
+
+    // glm::vec3 up = abs(wh.y) < 0.999 ? glm::vec3(0.0, 1.0, 0.0) : glm::vec3(0.0, 0.0, 1.0);
+    glm::vec3 up = glm::vec3( 0., 0., 1. );
+    glm::vec3 tangentX = abs(wh.z) < 0.999 ? normalize(cross(up, wh)) : glm::vec3(1.0, 0.0, .0);
+    glm::vec3 tangentY = cross(wh, tangentX);
+
+    float r = (hash(sa));
+    float a = hash(sa) * (2. * PI);
+    glm::vec2 p = glm::vec2(r * cos(a), r * sin(a));
+
+    float h = sqrt( 1.f - p.x * p.x );
+    float s = 0.5f * (1.0f + wh.y);
+    p.y = (1-s) * h + s * p.y;
+    
+    glm::vec3 Nh =
+        p.x * tangentX +
+        p.y * tangentY +
+        sqrt(std::max(0.0f, 1.0f - p.x*p.x - p.y*p.y)) * wh;
+
+    glm::vec3 H = glm::normalize(glm::vec3(
+        a_x * Nh.x,
+        a_y * Nh.y,
+        std::max(0.0f, Nh.z)
+    ));
+    
+    return H;
+}
+
+glm::vec3 Fresnel_Schlick(float cosTheta, glm::vec3 F0)
+{
+    // Clamp to avoid negative cosines
+    // cosTheta = glm::clamp(cosTheta, 0.0f, 1.0f);
+    return F0 + (glm::vec3(1.0f) - F0) * glm::pow(1.0f - cosTheta, 5.f);
+}
+
+float D_w( glm::vec3 w, glm::vec3 wm, float a_x, float a_y ) {
+    w = glm::normalize( w );
+    // if( w.z < 1e-4f ) return 0.f;
+    // printf( "%f, %f, %f, %f\n", abs( w.z ), G1(w, a_x, a_y), D_GGX_anisotropic( wm, a_x, a_y ), abs(glm::dot( w, wm )) );
+    // printf( "%f\n", G1( w, a_x, a_y ) / abs( w.z ) * D_GGX_anisotropic( wm, a_x, a_y ) * std::abs(glm::dot( w, wm )) );
+    return G1( w, a_x, a_y ) / abs( w.z ) * D_GGX_anisotropic( wm, a_x, a_y ) * std::abs(glm::dot( w, wm )); 
+}
+
+glm::vec3 TorranceSparrow_BRDF( glm::vec3 wo, 
+                                glm::vec3 wm, 
+                                glm::vec3 wi, 
+                                glm::vec3 F0,
+                                float a_x, float a_y ) {
+
+    
+
+    float cosTheta_i = abs(wi.z);
+    float cosTheta_o = abs(wo.z);
+
+    if( cosTheta_i * cosTheta_o < 1e-4f ) return glm::vec3( 0.f );
+
+    // printf( "%f, %f, %f, %f, %f\n", 
+    //     D_GGX_anisotropic( wm, a_x, a_y ) * Fresnel_Schlick( abs(glm::dot( wo, wm )), F0 ).x * G(wo, wi, a_x, a_y) / (4.f * cosTheta_i * cosTheta_o),
+    //     D_GGX_anisotropic( wm, a_x, a_y ), 
+    //     Fresnel_Schlick( abs(dot(wo, wm)), F0 ).x,
+    //     G(wo, wi, a_x, a_y),
+    //     (4.f * cosTheta_i * cosTheta_o) 
+    // );
+
+    return D_GGX_anisotropic( wm, a_x, a_y ) * Fresnel_Schlick( abs(glm::dot( wo, wm )), F0 ) * G(wo, wi, a_x, a_y) / (4.f * cosTheta_i * cosTheta_o);
+    // return Fresnel_Schlick( abs(glm::dot( wo, wm )), F0 );
+}
+
+float GGX_pdf( glm::vec3 wo, glm::vec3 wm, float a_x, float a_y ) {
+    
+    float absDot = abs( glm::dot( wo, wm ) );
+    if( glm::dot( wo, wm ) < 0 ) wm = -wm;
+    // printf( "%f, %f, %f\n", D_w( wo, wm, a_x, a_y ) / (4.f * absDot ), D_w( wo, wm, a_x, a_y ), (4.f * absDot ) );
+    if( absDot < 1e-4f ) return 0.f;
+    return D_w( wo, wm, a_x, a_y ) / (4.f * absDot );
+}
 
 inline float PowerHeuristic( int nf, float fPdf, int ng, float gPdf ) {
     float f = nf * fPdf;
     float g = ng * gPdf;
     return ( f * f ) / ( f * f + g * g );
+}
+
+float SmithG1_Beckmann(glm::vec3 v, float alpha)
+{
+    float cosTheta = abs(v.z);
+
+    if (cosTheta <= 1e-4f)
+        return 0.0f;
+
+    float sinTheta = sqrt(1.0f - cosTheta * cosTheta);
+    float tanTheta = sinTheta / cosTheta;
+
+    if (tanTheta == 0.0f)
+        return 1.0f;
+
+    float a = 1.0f / (alpha * tanTheta);
+
+    if (a >= 1.6f)
+        return 1.0f;
+
+    float a2 = a * a;
+    return (3.535f * a + 2.181f * a2) /
+           (1.0f + 2.276f * a + 2.577f * a2);
+}
+
+float BeckmannNDF( glm::vec3 &wh, float a ) {
+    float cosTheta = abs(wh.z);
+    float sinTheta = sqrt( std::max(0.f, 1.f - cosTheta * cosTheta) );
+
+    if( cosTheta <= 1e-4f ) return 0.;
+
+    float tan2Theta = (sinTheta * sinTheta) / (cosTheta * cosTheta);
+    float cos4Theta = cosTheta * cosTheta * cosTheta * cosTheta;
+    float a2 = a * a;
+
+    return exp( -tan2Theta / a2 )  / (float(PI) * a2 * cos4Theta);
+}
+
+float BeckmannPDF( glm::vec3 &wo, glm::vec3 &wi, float a ) {
+
+    // return BeckmannNDF( wh, a ) * abs(wh.z);
+    glm::vec3 wh = glm::normalize( wo + wi );
+    float D = BeckmannNDF( wh, a );
+    float cosTheta_o = abs( wo.z );
+    float G1 = SmithG1_Beckmann( wo, a );
+
+    return D * G1 * abs(glm::dot(wo, wh)) / (cosTheta_o);
+}
+
+glm::vec3 SampleBeckmannIsotropic( float a, float sa ) {
+    float a2 = a*a;
+    float phi = float(2.f * PI) * hash( sa );
+    float logSample = log( 1.f - hash(sa) );
+    float tan2Theta = -a2 * logSample;
+
+    // if( isinf( logSample ) ) return 0.f;
+
+    float cosTheta = 1.f/sqrt(1.f + tan2Theta);
+    float sinTheta = sqrt( std::max(0.f, 1.f - cosTheta * cosTheta) );
+
+    glm::vec3 wh = glm::vec3( sinTheta * cos( phi ), sinTheta * sin( phi ), cosTheta );
+
+    return wh;
+}
+
+glm::vec3 BeckamnnBRDF( glm::vec3 wo, glm::vec3 wi, glm::vec3 F0, float a ) {
+    
+    float cosTheta_o = abs( wo.z );
+    float cosTheta_i = abs( wi.z );
+    // glm::vec3 w = glm::normalize(wo + wi);
+    glm::vec3 wh = glm::normalize(wo + wi);
+
+    if( cosTheta_i <= 1e-4f || cosTheta_o <= 1e-4f ) return glm::vec3(0.f);
+
+    glm::vec3 F = Fresnel_Schlick( abs(glm::dot(wo, wh)), F0 );
+    float D = BeckmannNDF( wh, a );
+    float G = SmithG1_Beckmann( wo, a ) * SmithG1_Beckmann(wi, a );
+    // float G1 = SmithG1_Beckmann( wo, a );
+    glm::vec3 fr = D * F * G / (4.f * cosTheta_i * cosTheta_o);
+    
+
+    // printf( "%f, %f, %f, %f, %f\n", fr.x, D, F.x, G, (4.f * cosTheta_i * cosTheta_o) );
+
+    return fr;
 }
 
 glm::vec3 rendererCalculateColor( glm::vec3& ro, glm::vec3& rd, BVH *bvh, float sa ) {
@@ -311,6 +545,7 @@ glm::vec3 rendererCalculateColor( glm::vec3& ro, glm::vec3& rd, BVH *bvh, float 
     // glm::vec3 lightCol = glm::vec3(1.000, .8, .6);
     // glm::vec3 lightPos = glm::vec3(280., 400., 10.);
     glm::vec3 lightPos = glm::vec3(-60.0f, 28.f, -60.0f);
+    // glm::vec3 lightPos = glm::vec3(-60.0f, 100.f, 100.0f);
     // glm::vec3 lightPos = glm::vec3(280., 400., 250.);
     // glm::vec3 lightPos = glm::vec3(-60.0f, 198.f, 400.0f);
     // glm::vec3 sunPos = glm::vec3(0.f, 0.f, 1.);
@@ -325,16 +560,16 @@ glm::vec3 rendererCalculateColor( glm::vec3& ro, glm::vec3& rd, BVH *bvh, float 
 
     const int bounces = 7;
     
-    Light sun = Light( sunPos, sunCol, LightType::SUN );
-    sun.cosThetaMax = 2.f * sa - 1.f;
+    // Light sun = Light( sunPos, sunCol, LightType::SUN );
+    // sun.cosThetaMax = 2.f * sa - 1.f;
 
-    std::vector<Light> lights = {
-        Light( lightPos, lightCol * 65000.0f, LightType::POINT ),
-        // Light( lightPos, glm::vec3( 0.98, 0.549, 0.129 ) * 7.8f, LightType::POINT ),
-        // Light( glm::vec3( 280., 500., 50. ), glm::vec3( 0, 0.851, 0.416 ) * 3.8f, LightType::POINT ),
-        // sun,
-        // Light( glm::vec3(300., 500., 250.), sunCol * 210.1f, LightType::POINT ),
-    };
+    // std::vector<Light> lights = {
+    //     Light( lightPos, lightCol * 65000.0f, LightType::POINT ),
+    //     // Light( lightPos, glm::vec3( 0.98, 0.549, 0.129 ) * 7.8f, LightType::POINT ),
+    //     // Light( glm::vec3( 280., 500., 50. ), glm::vec3( 0, 0.851, 0.416 ) * 3.8f, LightType::POINT ),
+    //     // sun,
+    //     // Light( glm::vec3(300., 500., 250.), sunCol * 210.1f, LightType::POINT ),
+    // };
 
     // float nLights = float(lights.size());
     // std::uniform_int_distribution<> distrib(0, nLights - 1);
@@ -402,31 +637,145 @@ glm::vec3 rendererCalculateColor( glm::vec3& ro, glm::vec3& rd, BVH *bvh, float 
         // if(!isLightHit)
         //     printf( "%f, %f, %f, %f, %f, %f, %f, %f, %f\n", pointHit.t, pointHit.hitPoint.x, pointHit.hitPoint.y, pointHit.hitPoint.z, pos.x, pos.y, pos.z, glm::length(lDir), glm::length( pointHit.hitPoint - pos ));
 
-        float NdotL = std::max( glm::dot( nor, -liray ), 0.f );
+        float NdotL = std::max( glm::dot( nor, liray ), 0.f );
         float I = 19.f;
+        // float I = 10.f;
         // float I = 13.f;
 
         float shadow = (1.f - float(isLightHit));
         
-        glm::vec3 bounceDir = RandomUnitVectorInHemisphereOf( nor, hash(sa) );
-        float cosTheta = std::max(glm::dot(nor, bounceDir), 0.f);
+        // glm::vec3 bounceDir = RandomUnitVectorInHemisphereOf( nor, hash(sa) );
         // float pdf = 1. / ( 2. * PI );  
 
+        float a_x = .5f, a_y = .5f;
+        glm::vec3 wo = -rd;
+        // glm::vec3 wm = glm::normalize(Sample_wm( wo, sa, a_x, a_y ));
+        // // if( glm::dot( glm::vec3(0., 0., 1.), wm ) < 0 ) wm=-wm;
+       
+        // glm::vec3 up = abs(nor.y) < 0.999 ? glm::vec3(0.0, 1.0, 0.0) : glm::vec3(1.0, 0.0, 0.0);
+        // glm::vec3 tangentX = normalize(cross(up, nor));
+        // glm::vec3 tangentY = cross(nor, tangentX);
+
+        // wm = tangentX * wm.x + tangentY * wm.y + wm.z * nor;
+        // wm = glm::normalize( wm );
+
+        // phong lobe
+        // float n = 600.f;
+
+        // float u1 = hash(sa);
+        // float u2 = hash(sa);
+
+        // float phi = 2.f * PI * u1;
+        // float ct = pow(u2, 1.f / (n + 1.f));
+        // float sinTheta = sqrt(1.f - ct * ct);
+
+        // // local space (around R)
+        // glm::vec3 localDir(
+        //     cos(phi) * sinTheta,
+        //     sin(phi) * sinTheta,
+        //     ct
+        // );
+
+        // glm::vec3 up = abs(nor.y) < 0.999 ? glm::vec3(0.0, 1.0, 0.0) : glm::vec3(1.0, 0.0, 0.0);
+        // glm::vec3 tangentX = normalize(cross(up, nor));
+        // glm::vec3 tangentY = cross(nor, tangentX);
+
+        // glm::vec3 R = glm::reflect( -wo, nor );
+        // glm::vec3 wi = tangentX * localDir.x + tangentY * localDir.y + localDir.z * R;
+        // wi = glm::normalize( wi );
+        // glm::vec3 wi = tangentX * localDir.x + tangentY * localDir.y + localDir.z * R;
+        
+        // beckmann        
+        float roughness = mat.roughness;
+        glm::vec3 localDir = SampleBeckmannIsotropic( roughness, sa );
+
+        glm::vec3 up = abs(nor.y) < 0.999 ? glm::vec3(0.0, 1.0, 0.0) : glm::vec3(1.0, 0.0, 0.0);
+        glm::vec3 tangentX = normalize(cross(up, nor));
+        glm::vec3 tangentY = cross(nor, tangentX);
+
+        if (localDir.z * wo.z <= 0.f) localDir = -localDir;
+
+        glm::vec3 wh = tangentX * localDir.x + tangentY * localDir.y + localDir.z * nor;
+        wh = glm::normalize( wh );   
+
+        glm::vec3 wi = reflect( -wo, wh );
+        glm::vec3 F0( .04f );
+        glm::vec3 fr = BeckamnnBRDF( wo, wi, F0, roughness ); 
+        float wh_pdf = BeckmannPDF( wo, wi, roughness );
+        
+        float WhDotWo = abs(dot(wo, wh));
+
+        float pdf_wi = wh_pdf / (4.f * WhDotWo);
+        // printf( "%f, %f, %f, %f, %f\n", glm::length( glm::normalize(wo + wi) - wh ), fr.y, fr.z, pdf_wi, wh_pdf );
+
+        // float RdotWi = std::max(glm::dot(wi, R), 0.f);
+
+        // float pdf = GGX_pdf( wo, wm, a_x, a_y );
+        float pdf;
+
+        glm::vec3 F = Fresnel_Schlick(std::max(0.f, glm::dot( wo, glm::normalize(wo + wi) )), F0);
+        // printf( "%f, %f, %f\n", F.x, F.y, F.z );
+        // glm::vec3 F = Fresnel_Schlick(std::max(0.f, glm::dot( wo, wm )), F0);
+        // float p_spec = glm::clamp(F.x * 0.299f + .587f * F.y + .114f * F.z, 0.0f, 1.0f);
+        float p_spec = F.x;
+        // printf( "%f\n", p_spec );
+        // float p_spec = .15;
+
+        // float cosTheta_i = std::max(0.f, glm::dot(wi, wh));
+        // float cosTheta_o = std::max(0.f, glm::dot(wo, wh));
+
+        // if( cosTheta_i <= 1e-4f || cosTheta_o < 1e-4f ) continue;
+
+        // glm::vec3 diffuse = 28.f/(23.f * float(PI)) * color * (1.f-F0) * (1.f - pow(1.f - cosTheta_i/2.f, 5.f)) * (1.f - pow(1.f - cosTheta_o/2.f, 5.f));    
+		// float NdotL = dot(nor, wi);
+        glm::vec3 diffuse = bsdf;
+        // glm::vec3 specular = F * glm::vec3( 1. ) * (n+2.f)/(2.f * float(PI)) * pow(RdotWi, n);    
+        glm::vec3 specular = fr;    
+        
+        glm::vec3 brdf = (1.f - p_spec) * diffuse + p_spec * specular;
+        // glm::vec3 brdf = diffuse + specular;
+
+        
+        glm::vec3 bounceDir;
+        float cosThetaMax = sqrt(3.f)/2.f;
+        // float cosThetaMax = cos( float(PI/10.) );
+        // float pdf_1, pdf_2;
+        if( hash(sa) < p_spec ) {
+            
+            // glm::vec3 up = abs(nor.y) < 0.999 ? glm::vec3(0.0, 1.0, 0.0) : glm::vec3(1.0, 0.0, 0.0);
+            // glm::vec3 tangentX = normalize(cross(up, nor));
+            // glm::vec3 tangentY = cross(nor, tangentX);
+
+            // glm::vec3 wi = tangentX * R.x + tangentY * R.y + R.z * nor;
+            
+            bounceDir = wi;
+            // pdf_1 = GGX_pdf( wo, wm, a_x, a_y );
+        } else {
+            bounceDir = RandomUnitVectorInHemisphereOf( nor, hash(sa) );
+            // bounceDir
+            // float cosTheta = std::max(glm::dot(nor, bounceDir), 0.f);
+            // pdf_2 = cosTheta / float(PI);
+        }
+
+        // printf("%f\n", pdf);
+        
         Hit areaHit;
         bool aHit = bvh->IntersectBVH(pos + nor * 1e-4f, bounceDir, areaHit);
+        
+        float cosTheta = std::max(glm::dot(nor, bounceDir), 0.f);
+        // pdf = p_spec * GGX_pdf( wo, wm, a_x, a_y ) + (1.f - p_spec) * cosTheta / float(PI);
+        // float pdf_spec = (n + 1.f) / (2.f * PI) * pow(RdotWi, n);
 
-        float pdf = cosTheta / ( PI );  
+        pdf = p_spec * (pdf_wi) + (1.f - p_spec) * cosTheta / float(PI);
+
         if( cosTheta <= 0.f ) continue;
+        // if( pdf <= 0.f ) continue;
+        // if( brdf.x == 0 && brdf.y == 0 && brdf.z == 0 ) continue;
 
-        // shadow breaks shit
         // glm::vec3 nextL = L;
-        L += PowerHeuristic( 1, pdf, 1, pdf_omega ) * bsdf * cosTheta * (1.f - float(aHit)) / pdf;
+        L += PowerHeuristic( 1, pdf, 1, pdf_omega ) * brdf * cosTheta * (1.f - float(aHit)) / pdf;
         // L += PowerHeuristic( 1, pdf_omega, 1, pdf ) * bsdf * NdotL * I * cosThetaL * shadow / (pdf_area * glm::dot(lDir, lDir));
-        L += PowerHeuristic( 1, pdf_omega, 1, pdf ) * bsdf * I * cosThetaL * shadow / (pdf_omega);
-        // L *= beta;
-        // L += PowerHeuristic( 1, pdf_omega, 1, pdf ) * bsdf * NdotL * I * cosThetaL * shadow / (pdf_area * glm::dot(lDir, lDir));
-        // L += PowerHeuristic( 1, pdf_omega, 1, pdf ) * bsdf * NdotL * I * cosThetaL * shadow / (pdf_omega);
-        // L += bsdf * I * cosThetaL * shadow / (pdf_omega);
+        L += PowerHeuristic( 1, pdf_omega, 1, pdf ) * brdf * I * cosThetaL * shadow / (pdf_omega);
         L *= beta;
         
 
@@ -438,16 +787,15 @@ glm::vec3 rendererCalculateColor( glm::vec3& ro, glm::vec3& rd, BVH *bvh, float 
 
         // printf( "%f, %f, %f\n", pdf_omega, atten, beta.x * shadow * bsdf.x * I * atten / pdf_omega );
 
-
-        bounceDir = RandomUnitVectorInHemisphereOf( nor, hash(sa) );
         cosTheta = std::max(glm::dot(nor, bounceDir), 0.f);
         // float pdf = 1. / ( 2. * PI );  
 
         // if( cosTheta <= 0.f ) continue;
 
-        pdf = cosTheta / ( PI );  
+        // pdf = cosTheta / ( PI );  
+        // pdf = cosTheta / ( PI );  
 
-        beta *= bsdf * cosTheta / pdf;
+        beta *= brdf * cosTheta / pdf;
 
         if (i > 3) {
             float p = glm::clamp(
